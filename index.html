@@ -77,7 +77,7 @@
     <br>
     <button class="button zero" onclick="appendNumber('0')">0</button>
     <button class="button" onclick="appendDecimal()">,</button>
-    <button class="button pi" onclick="appendPi()">π</button> <!-- Button für Pi -->
+    <button class="button pi" onclick="appendPi()">π</button>
     <button class="button equal" onclick="calculate()">=</button>
     <button class="button operator" onclick="setOperator('/')">/</button>
     <button class="button" onclick="clearDisplay()">C</button>
@@ -169,7 +169,7 @@
       navigator.serviceWorker.register('/service-worker.js')
         .then(function(registration) {
           console.log('Service Worker registration successful with scope: ', registration.scope);
-
+          
           // Überprüfen auf Updates
           if (registration.waiting) {
             registration.waiting.postMessage({ action: 'skipWaiting' });

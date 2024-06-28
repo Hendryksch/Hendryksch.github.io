@@ -1,4 +1,4 @@
-const CACHE_NAME = 'my-cache-v3'; // Versionsnummer aktualisieren, wenn Änderungen vorgenommen werden
+const CACHE_NAME = 'my-cache-v3'; // Aktualisiere die Versionsnummer bei Änderungen
 const urlsToCache = [
   '/',
   '/index.html',
@@ -9,20 +9,17 @@ const urlsToCache = [
 
 // Installations-Ereignis
 self.addEventListener('install', function(event) {
-  console.log('Service Worker installing.');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(function(cache) {
-        console.log('Opened cache');
         return cache.addAll(urlsToCache);
       })
   );
-  self.skipWaiting(); // Aktiviert den neuen Service Worker sofort
+  self.skipWaiting();
 });
 
 // Aktivierungs-Ereignis
 self.addEventListener('activate', function(event) {
-  console.log('Service Worker activating.');
   var cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(function(cacheNames) {
@@ -34,40 +31,36 @@ self.addEventListener('activate', function(event) {
         })
       );
     }).then(function() {
-      return self.clients.claim(); // Aktiviert den neuen Service Worker sofort
+      return self.clients.claim();
     })
   );
 });
 
 // Fetch-Ereignis
 self.addEventListener('fetch', function(event) {
-  console.log('Fetching:', event.request.url);
   event.respondWith(
-    caches.match(event.request)
-      .then(function(response) {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).then(
-          function(response) {
-            if(!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-            var responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then(function(cache) {
-                cache.put(event.request, responseToCache);
-              });
-            return response;
-          }
-        );
-      })
+    caches.match(event.request).then(function(response) {
+      if (response) {
+        fetchAndUpdateCache(event.request); // Aktualisiere den Cache im Hintergrund
+        return response; // Verwende die gecachte Version
+      }
+      return fetchAndUpdateCache(event.request); // Fallback auf das Netzwerk und aktualisiere den Cache
+    })
   );
 });
 
-// Funktion zum Überprüfen auf Updates
-self.addEventListener('message', function(event) {
-  if (event.data.action === 'skipWaiting') {
-    self.skipWaiting();
-  }
-});
+// Funktion zum Abrufen und Aktualisieren des Caches
+function fetchAndUpdateCache(request) {
+  return fetch(request).then(function(response) {
+    if (!response || response.status !== 200 || response.type !== 'basic') {
+      return response;
+    }
+    var responseToCache = response.clone();
+    caches.open(CACHE_NAME).then(function(cache) {
+      cache.put(request, responseToCache);
+    });
+    return response;
+  }).catch(function() {
+    return caches.match(request); // Falls das Netzwerk fehlschlägt, verwende den Cache
+  });
+}
