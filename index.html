@@ -54,6 +54,9 @@
     .button.pi {
       background: #ffc107;
     }
+    .button.square {
+      background: #6c757d;
+    }
   </style>
 </head>
 <body>
@@ -81,6 +84,7 @@
     <button class="button equal" onclick="calculate()">=</button>
     <button class="button operator" onclick="setOperator('/')">/</button>
     <button class="button" onclick="clearDisplay()">C</button>
+    <button class="button square" onclick="squareNumber()">x²</button> <!-- Button für Quadrieren -->
   </div>
 
   <script>
@@ -163,6 +167,15 @@
       previousNumber = '';
       operator = '';
       display.value = '';
+    }
+
+    function squareNumber() {
+      if (currentNumber === '') return;
+      const num = parseFloat(currentNumber.replace(',', '.'));
+      const result = num * num;
+      display.value = result.toString().replace('.', ',');
+      currentNumber = result.toString();
+      shouldResetDisplay = true;
     }
 
     if ('serviceWorker' in navigator) {
