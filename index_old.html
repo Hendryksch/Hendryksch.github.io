@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taschenrechner PWA</title>
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+    }
+    #calculator {
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #display {
+      width: 100%;
+      height: 50px;
+      font-size: 2em;
+      margin-bottom: 10px;
+      text-align: right;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background: #fafafa;
+    }
+    .button {
+      width: 22%;
+      height: 50px;
+      font-size: 1.5em;
+      margin: 1%;
+      border: none;
+      border-radius: 5px;
+      background: #007bff;
+      color: #fff;
+      cursor: pointer;
+    }
+    .button.operator {
+      background: #28a745;
+    }
+    .button.equal {
+      background: #dc3545;
+    }
+    .button.zero {
+      width: 47%;
+    }
+    .button.pi {
+      background: #ffc107;
+    }
+    .button.square {
+      background: #6c757d;
+    }
+  </style>
+</head>
+<body>
+  <div id="calculator">
+    <input type="text" id="display" readonly>
+    <br>
+    <button class="button" onclick="appendNumber('1')">1</button>
+    <button class="button" onclick="appendNumber('2')">2</button>
+    <button class="button" onclick="appendNumber('3')">3</button>
+    <button class="button operator" onclick="setOperator('+')">+</button>
+    <br>
+    <button class="button" onclick="appendNumber('4')">4</button>
+    <button class="button" onclick="appendNumber('5')">5</button>
+    <button class="button" onclick="appendNumber('6')">6</button>
+    <button class="button operator" onclick="setOperator('-')">-</button>
+    <br>
+    <button class="button" onclick="appendNumber('7')">7</button>
+    <button class="button" onclick="appendNumber('8')">8</button>
+    <button class="button" onclick="appendNumber('9')">9</button>
+    <button class="button operator" onclick="setOperator('*')">*</button>
+    <br>
+    <button class="button zero" onclick="appendNumber('0')">0</button>
+    <button class="button" onclick="appendDecimal()">,</button>
+    <button class="button pi" onclick="appendPi()">π</button>
+    <button class="button equal" onclick="calculate()">=</button>
+    <button class="button operator" onclick="setOperator('/')">/</button>
+    <button class="button" onclick="clearDisplay()">C</button>
+    <button class="button square" onclick="squareNumber()">x²</button> <!-- Button für Quadrieren -->
+  </div>
+
+  <script>
+    let display = document.getElementById('display');
+    let currentNumber = '';
+    let previousNumber = '';
+    let operator = '';
+    let shouldResetDisplay = false;
+
+    function appendNumber(number) {
+      if (shouldResetDisplay) {
+        currentNumber = '';
+        shouldResetDisplay = false;
+      }
+      currentNumber += number;
+      display.value = currentNumber;
+    }
+
+    function appendDecimal() {
+      if (shouldResetDisplay) {
+        currentNumber = '0';
+        shouldResetDisplay = false;
+      }
+      if (!currentNumber.includes(',')) {
+        currentNumber += ',';
+        display.value = currentNumber;
+      }
+    }
+
+    function appendPi() {
+      if (shouldResetDisplay) {
+        currentNumber = '';
+        shouldResetDisplay = false;
+      }
+      currentNumber = (parseFloat(currentNumber.replace(',', '.')) || 0) + Math.PI.toString().replace('.', ',');
+      display.value = currentNumber;
+      shouldResetDisplay = true;
+    }
+
+    function setOperator(op) {
+      if (currentNumber === '') return;
+      if (previousNumber !== '') {
+        calculate();
+      }
+      operator = op;
+      previousNumber = currentNumber.replace(',', '.');
+      currentNumber = '';
+    }
+
+    function calculate() {
+      if (previousNumber === '' || currentNumber === '') return;
+      let result;
+      const prev = parseFloat(previousNumber);
+      const current = parseFloat(currentNumber.replace(',', '.'));
+      switch (operator) {
+        case '+':
+          result = prev + current;
+          break;
+        case '-':
+          result = prev - current;
+          break;
+        case '*':
+          result = prev * current;
+          break;
+        case '/':
+          result = prev / current;
+          break;
+        default:
+          return;
+      }
+      display.value = result.toString().replace('.', ',');
+      currentNumber = result.toString();
+      previousNumber = '';
+      operator = '';
+      shouldResetDisplay = true;
+    }
+
+    function clearDisplay() {
+      currentNumber = '';
+      previousNumber = '';
+      operator = '';
+      display.value = '';
+    }
+
+    function squareNumber() {
+      if (currentNumber === '') return;
+      const num = parseFloat(currentNumber.replace(',', '.'));
+      const result = num * num;
+      display.value = result.toString().replace('.', ',');
+      currentNumber = result.toString();
+      shouldResetDisplay = true;
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(function(registration) {
+          console.log('Service Worker registration successful with scope: ', registration.scope);
+          
+          // Überprüfen auf Updates
+          if (registration.waiting) {
+            registration.waiting.postMessage({ action: 'skipWaiting' });
+          }
+
+          registration.onupdatefound = function() {
+            if (registration.installing) {
+              registration.installing.onstatechange = function() {
+                if (registration.installing.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('Neue Version verfügbar!');
+                  if (confirm('Neue Version verfügbar. Möchtest du aktualisieren?')) {
+                    registration.waiting.postMessage({ action: 'skipWaiting' });
+                  }
+                }
+              };
+            }
+          };
+
+          let refreshing;
+          navigator.serviceWorker.addEventListener('controllerchange', function() {
+            if (refreshing) return;
+            window.location.reload();
+            refreshing = true;
+          });
+        })
+        .catch(function(error) {
+          console.log('Service Worker registration failed: ', error);
+        });
+    }
+  </script>
+</body>
+</html>
