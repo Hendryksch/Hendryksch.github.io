@@ -73,7 +73,7 @@
     <button class="button operator" onclick="setOperator('*')">*</button>
     <br>
     <button class="button zero" onclick="appendNumber('0')">0</button>
-    <button class="button" onclick="appendDecimal()">,</button> <!-- Button für das Komma -->
+    <button class="button" onclick="appendDecimal()">,</button>
     <button class="button equal" onclick="calculate()">=</button>
     <button class="button operator" onclick="setOperator('/')">/</button>
     <button class="button" onclick="clearDisplay()">C</button>
@@ -155,6 +155,31 @@
       navigator.serviceWorker.register('/service-worker.js')
         .then(function(registration) {
           console.log('Service Worker registration successful with scope: ', registration.scope);
+
+          // Überprüfen auf Updates
+          if (registration.waiting) {
+            registration.waiting.postMessage({ action: 'skipWaiting' });
+          }
+
+          registration.onupdatefound = function() {
+            if (registration.installing) {
+              registration.installing.onstatechange = function() {
+                if (registration.installing.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('Neue Version verfügbar!');
+                  if (confirm('Neue Version verfügbar. Möchtest du aktualisieren?')) {
+                    registration.waiting.postMessage({ action: 'skipWaiting' });
+                  }
+                }
+              };
+            }
+          };
+
+          let refreshing;
+          navigator.serviceWorker.addEventListener('controllerchange', function() {
+            if (refreshing) return;
+            window.location.reload();
+            refreshing = true;
+          });
         })
         .catch(function(error) {
           console.log('Service Worker registration failed: ', error);

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'my-cache-v1'; // Versionsnummer aktualisieren, wenn Änderungen vorgenommen werden
+const CACHE_NAME = 'my-cache-v2'; // Versionsnummer aktualisieren, wenn Änderungen vorgenommen werden
 const urlsToCache = [
   '/',
   '/index.html',
@@ -63,4 +63,11 @@ self.addEventListener('fetch', function(event) {
         );
       })
   );
+});
+
+// Funktion zum Überprüfen auf Updates
+self.addEventListener('message', function(event) {
+  if (event.data.action === 'skipWaiting') {
+    self.skipWaiting();
+  }
 });
