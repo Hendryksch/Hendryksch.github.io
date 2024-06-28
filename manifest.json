@@ -1,6 +1,6 @@
 {
-  "name": "Meine PWA",
-  "short_name": "PWA",
+  "name": "Elekteowizard",
+  "short_name": "E-Wizard",
   "start_url": "/index.html",
   "display": "standalone",
   "background_color": "#ffffff",
