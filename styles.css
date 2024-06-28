@@ -23,7 +23,7 @@ body {
 
 .buttons {
     display: grid;
-    grid-template-columns: repeat(2, 150px); /* Zwei Spalten, 150px breit */
+    grid-template-columns: repeat(2, auto); /* Zwei Spalten mit automatischer Breite */
     gap: 20px; /* Abstand zwischen den Buttons */
 }
 
