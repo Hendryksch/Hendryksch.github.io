@@ -1,17 +1,20 @@
-const CACHE_NAME = 'my-cache-v1.0.1'; // Aktualisiere die Versionsnummer bei Änderungen
+const CACHE_NAME = 'my-cache-v1.0.2'; // Aktualisiere die Versionsnummer bei Änderungen
 const urlsToCache = [
   '/',
   '/index.html',
   '/styles.css',
   '/script.js',
-  '/manifest.json'
+  '/manifest.json',
+  '/icons/icon_512x512.png'
 ];
 
 // Installations-Ereignis
 self.addEventListener('install', function(event) {
+  console.log('Service Worker: Install');
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(function(cache) {
+        console.log('Service Worker: Caching Files');
         return cache.addAll(urlsToCache);
       })
   );
@@ -20,12 +23,14 @@ self.addEventListener('install', function(event) {
 
 // Aktivierungs-Ereignis
 self.addEventListener('activate', function(event) {
+  console.log('Service Worker: Activate');
   var cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then(function(cacheNames) {
       return Promise.all(
         cacheNames.map(function(cacheName) {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Service Worker: Clearing Old Cache');
             return caches.delete(cacheName);
           }
         })

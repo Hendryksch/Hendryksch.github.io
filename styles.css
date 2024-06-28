@@ -6,6 +6,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     height: 100vh;
 }
 
@@ -25,6 +26,7 @@ body {
     display: grid;
     grid-template-columns: repeat(2, auto); /* Zwei Spalten mit automatischer Breite */
     gap: 20px; /* Abstand zwischen den Buttons */
+    margin-bottom: 30px; /* Abstand zum Update-Button */
 }
 
 .button {
@@ -40,4 +42,8 @@ body {
 
 .button:hover {
     background-color: #87ceeb; /* Etwas dunklerer Blauton bei Hover */
+}
+
+#updateButton {
+    display: none; /* Update-Button standardmäßig ausblenden */
 }
