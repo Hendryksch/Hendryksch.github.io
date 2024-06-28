@@ -73,6 +73,7 @@
     <button class="button operator" onclick="setOperator('*')">*</button>
     <br>
     <button class="button zero" onclick="appendNumber('0')">0</button>
+    <button class="button" onclick="appendDecimal()">,</button> <!-- Button für das Komma -->
     <button class="button equal" onclick="calculate()">=</button>
     <button class="button operator" onclick="setOperator('/')">/</button>
     <button class="button" onclick="clearDisplay()">C</button>
@@ -83,10 +84,26 @@
     let currentNumber = '';
     let previousNumber = '';
     let operator = '';
+    let shouldResetDisplay = false;
 
     function appendNumber(number) {
+      if (shouldResetDisplay) {
+        currentNumber = '';
+        shouldResetDisplay = false;
+      }
       currentNumber += number;
       display.value = currentNumber;
+    }
+
+    function appendDecimal() {
+      if (shouldResetDisplay) {
+        currentNumber = '0';
+        shouldResetDisplay = false;
+      }
+      if (!currentNumber.includes(',')) {
+        currentNumber += ',';
+        display.value = currentNumber;
+      }
     }
 
     function setOperator(op) {
@@ -95,7 +112,7 @@
         calculate();
       }
       operator = op;
-      previousNumber = currentNumber;
+      previousNumber = currentNumber.replace(',', '.');
       currentNumber = '';
     }
 
@@ -103,7 +120,7 @@
       if (previousNumber === '' || currentNumber === '') return;
       let result;
       const prev = parseFloat(previousNumber);
-      const current = parseFloat(currentNumber);
+      const current = parseFloat(currentNumber.replace(',', '.'));
       switch (operator) {
         case '+':
           result = prev + current;
@@ -120,10 +137,11 @@
         default:
           return;
       }
-      display.value = result;
-      currentNumber = result;
+      display.value = result.toString().replace('.', ',');
+      currentNumber = result.toString();
       previousNumber = '';
       operator = '';
+      shouldResetDisplay = true;
     }
 
     function clearDisplay() {
